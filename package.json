@@ -17,7 +17,7 @@
     "webpack-defaults": "webpack-defaults",
     "build:main": "pnpm build:config && tsc -p tsconfig.json",
     "pretest": "pnpm build:main",
-    "deploy": "trash deploy && mkdir -p deploy && cp index.html deploy && cp -r dist deploy"
+    "deploy": "trash deploy && mkdir -p deploy && cp index.html deploy && cp -r dist deploy && cp -r public deploy"
   },
   "dependencies": {
     "buttplug": "5.0.1",

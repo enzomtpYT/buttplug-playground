@@ -96,9 +96,27 @@ export default class ButtplugPanel extends Vue {
     this.CloseUiMessage();
     this.isConnecting = true;
     console.log("Client connecting");
-    // In buttplug v5, the connector takes the URL string directly
-    const connector = new ButtplugBrowserWebsocketClientConnector("ws://127.0.0.1:12345");
-    await this.Connect(connector);
+
+    for (const address of this.desktopAddresses) {
+      const protocols = [];
+      if (address.Secure) protocols.push("wss");
+      if (address.Insecure) protocols.push("ws");
+
+      for (const protocol of protocols) {
+        const url = `${protocol}://${address.Host}:${address.Port}`;
+        const connector = new ButtplugBrowserWebsocketClientConnector(url);
+        try {
+          await this.Connect(connector);
+          if (this.client.connected) {
+            return;
+          }
+        } catch (e) {
+          console.log(`Failed to connect to ${url}: ${e}`);
+        }
+      }
+    }
+    
+    this.SetErrorMessage("Could not connect to Intiface Desktop. Please check your addresses and ensure Intiface is running.");
   }
 
   private StoreAddressCookie() {
@@ -154,10 +172,10 @@ export default class ButtplugPanel extends Vue {
     this.isConnecting = true;
     this.AddListeners();
     try {
-      await this.client.connect(aConnector).catch((e: any) => { return; });
+      await this.client.connect(aConnector);
     } catch (e) {
       this.RemoveListeners();
-      return Promise.reject("test");
+      throw e;
     } finally {
       this.isConnecting = false;
     }
