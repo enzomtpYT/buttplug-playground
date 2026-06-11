@@ -19,7 +19,7 @@ const base = {
   entry: path.resolve('./src/main.ts'),
   output: {
     path: path.resolve('./dist'),
-    publicPath: '/dist/',
+    publicPath: './dist/',
     filename: 'build.js'
   },
   module: {
