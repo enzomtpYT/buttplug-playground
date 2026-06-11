@@ -3,12 +3,13 @@ sudo: false
 node_js:
   - 10
 install:
-  - yarn
+  - npm install -g pnpm
+  - pnpm install
 script:
-  - yarn tslint
-  - yarn build
-  - yarn deploy
-cache: yarn
+  - pnpm tslint
+  - pnpm build
+  - pnpm deploy
+cache: pnpm
 deploy:
   - provider: pages
     skip-cleanup: true

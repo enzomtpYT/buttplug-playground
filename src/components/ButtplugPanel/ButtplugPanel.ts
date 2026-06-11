@@ -3,8 +3,7 @@ import { Component, Prop } from "vue-property-decorator";
 import { 
          ButtplugClient,
          ButtplugClientDevice,
-         ButtplugWebsocketConnectorOptions,
-         ButtplugEmbeddedConnectorOptions,
+         ButtplugBrowserWebsocketClientConnector,
         } from "buttplug";
 Vue.use(require("vue-cookies"));
 
@@ -94,37 +93,12 @@ export default class ButtplugPanel extends Vue {
   }
 
   public async ConnectToIntifaceDesktop(): Promise<void> {
-    
     this.CloseUiMessage();
     this.isConnecting = true;
     console.log("Client connecting");
-    let connector = new ButtplugWebsocketConnectorOptions();
-    connector.Address = "ws://127.0.0.1:12345";
+    // In buttplug v5, the connector takes the URL string directly
+    const connector = new ButtplugBrowserWebsocketClientConnector("ws://127.0.0.1:12345");
     await this.Connect(connector);
-    /*
-    const connectPromises: Array<Promise<void>> = [];
-    let isConnected = false;
-    const urls: string[] = [];
-    for (const address of this.desktopAddresses) {
-      const baseUrl = `${address.Host}:${address.Port}`;
-      if (address.Insecure) {
-        urls.push(`ws://${baseUrl}`);
-      }
-      if (address.Secure) {
-        urls.push(`wss://${baseUrl}`);
-      }
-    }
-
-    for (const url of urls) {
-      try {
-        await this.Connect(new ButtplugBrowserWebsocketClientConnector(`${url}`));
-        isConnected = true;
-        break;
-      } catch (e) {
-        continue;
-      }
-    }
-    */ 
   }
 
   private StoreAddressCookie() {
@@ -159,11 +133,13 @@ export default class ButtplugPanel extends Vue {
   private OnDeviceListChanged(aDevice: ButtplugClientDevice) {
     // Just reset our internal device array.
     console.log(aDevice);
-    this.clientDevices = this.client.Devices;
+    this.clientDevices = this.client.connected ? Array.from(this.client.devices.values()) : [];
   }
 
   private async ConnectInBrowser(): Promise<void> {
-    let connector = new ButtplugEmbeddedConnectorOptions();
+    // ButtplugEmbeddedConnectorOptions was removed in v5; browser-embedded server
+    // is no longer supported. Fall back to websocket on default port.
+    const connector = new ButtplugBrowserWebsocketClientConnector("ws://127.0.0.1:12345");
     await this.Connect(connector);
   }
 
@@ -174,7 +150,7 @@ export default class ButtplugPanel extends Vue {
     this.client.addListener("disconnect", this.RemoveListeners);
   }
 
-  private async Connect(aConnector: ButtplugEmbeddedConnectorOptions | ButtplugWebsocketConnectorOptions): Promise<void> {
+  private async Connect(aConnector: ButtplugBrowserWebsocketClientConnector): Promise<void> {
     this.isConnecting = true;
     this.AddListeners();
     try {
@@ -188,7 +164,7 @@ export default class ButtplugPanel extends Vue {
     this.isConnected = true;
     // If we don't connect successfully, the above line will throw. Assume that
     // we're connected if we get this far.
-    this.clientDevices = this.client.Devices;
+    this.clientDevices = this.client.connected ? Array.from(this.client.devices.values()) : [];
     await this.StartScanning();
   }
 
@@ -215,7 +191,7 @@ export default class ButtplugPanel extends Vue {
     // The setTimeout to call this may fire after disconnect. If so, just drop
     // it.
 
-    if (!this.client.Connected) {
+    if (!this.client.connected) {
       return;
     }
 
@@ -260,7 +236,7 @@ export default class ButtplugPanel extends Vue {
 
   private FireChange() {
     const devices = this.clientDevices.filter((x: ButtplugClientDevice) =>
-                                              this.selectedDevices.indexOf(x.Index) !== -1);
+                                              this.selectedDevices.indexOf(x.index) !== -1);
     this.$emit("selecteddeviceschange", devices);
   }
 

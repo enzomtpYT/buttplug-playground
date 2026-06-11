@@ -8,12 +8,12 @@ const vueSlider = require("vue-slider-component");
     vueSlider,
   },
 })
-export default class VibrationComponent extends Vue {
+export default class OscillationComponent extends Vue {
   @Prop()
   private device!: ButtplugClientDevice;
 
   @Prop({ default: -1 })
-  private vibratorIndex!: number;
+  private oscillatorIndex!: number;
 
   private sliderValue: number = 0;
   private isDragging: boolean = false;
@@ -23,25 +23,25 @@ export default class VibrationComponent extends Vue {
     this.$emit("dragstart");
   }
 
-  private async FireVibrateCommand() {
+  private async FireOscillateCommand() {
     // In buttplug v5, use runOutput with DeviceOutputCommand
     try {
-      const cmd = DeviceOutputCommand.createPercent(OutputType.Vibrate, this.sliderValue / 100.0);
+      const cmd = DeviceOutputCommand.createPercent(OutputType.Oscillate, this.sliderValue / 100.0);
       await this.device.runOutput(cmd);
     } catch (e) {
-      console.log("Error sending vibration command", e);
+      console.log("Error sending oscillation command", e);
     }
   }
 
   private OnDragEnd() {
     this.isDragging = false;
     this.$emit("dragstop");
-    this.FireVibrateCommand();
+    this.FireOscillateCommand();
   }
 
   private async OnValueChanged(endValue: number) {
     try {
-      await this.FireVibrateCommand();
+      await this.FireOscillateCommand();
     } catch (e) {
       console.log("Got exception back!");
       console.log(e);

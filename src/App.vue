@@ -97,6 +97,17 @@
               @dragstop="OnDragStop"
             />
           </div>
+          <div v-if="canOscillate(device)">
+            <h3>Oscillation</h3>
+            <div v-for="i in numOscillators(device)" :key="'oscillate-' + i">
+              <OscillationComponent
+                :device="device"
+                :oscillatorIndex="i - 1"
+                @dragstart="OnDragStart"
+                @dragstop="OnDragStop"
+              />
+            </div>
+          </div>
           <rotation-component
             v-if="canRotate(device)"
             :key="device.index + 'RotateAll'"

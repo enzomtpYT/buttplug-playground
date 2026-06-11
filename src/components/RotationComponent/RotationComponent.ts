@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
-import { ButtplugClientDevice } from "buttplug";
+import { ButtplugClientDevice, DeviceOutputCommand, OutputType } from "buttplug";
 const vueSlider = require("vue-slider-component");
 
 @Component({
@@ -24,10 +24,12 @@ export default class RotationComponent extends Vue {
   }
 
   private FireRotateCommand() {
-    // TODO We're gonna need to store multiple rotators into a local array now in order for this to work.
-    //
-    // If this is a slider for a specific feature, only address that.
-    this.device.rotate(Math.abs(this.sliderValue) / 100, this.sliderValue > 0);
+    // In buttplug v5, use runOutput with DeviceOutputCommand.
+    // The slider goes -100 to +100: magnitude is speed, sign is direction.
+    // v5 rotate uses a single scalar 0..1 where the direction is implicit in the feature.
+    const speed = Math.abs(this.sliderValue) / 100.0;
+    const cmd = DeviceOutputCommand.createPercent(OutputType.Rotate, speed);
+    this.device.runOutput(cmd).catch((e: any) => console.log("Error sending rotation command", e));
   }
 
   private OnDragEnd() {

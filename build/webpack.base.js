@@ -25,6 +25,25 @@ const base = {
   module: {
     rules: [
       {
+        // Transpile buttplug's pre-compiled JS which uses ES2022 class fields
+        // that Webpack 4 cannot parse natively.
+        test: /\.js$/,
+        include: /node_modules[\\\/]buttplug/,
+        use: [{
+          loader: 'babel-loader',
+          options: {
+            presets: [[
+              '@babel/preset-env',
+              {
+                targets: { chrome: '70' },
+                useBuiltIns: false,
+              }
+            ]],
+            plugins: ['@babel/plugin-transform-class-properties'],
+          }
+        }]
+      },
+      {
         test: /\.ts$/,
         exclude: /tests|example/,
         use: [{
@@ -110,7 +129,7 @@ const production =   {
   devtool: '#source-map',
 };
 
-module.exports = env => {
+module.exports = (env = 'development') => {
   switch(env) {
     case 'development':
       return base;

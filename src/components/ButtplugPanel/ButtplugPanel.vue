@@ -130,9 +130,10 @@
         v-for="device in clientDevices"
         v-model="selectedDevices"
         @change="FireChange"
-        :key="device.Index"
-        :value="device.Index"
-        :label="device.Name"></v-checkbox>
+        :key="device.index"
+        :value="device.index"
+        :label="device.name">
+      </v-checkbox>
     </div>
   </v-container>
 </template>

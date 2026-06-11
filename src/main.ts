@@ -2,9 +2,7 @@ import Vue from "vue";
 // use vuetify/lib, otherwise vue-loader won't optimize components at all.
 import Vuetify from "vuetify/lib";
 import App from "./App.vue";
-import { buttplugInit } from "buttplug";
-// Import vue-buttplug-material-component from the src, otherwise vue-loader
-// won't optimize the components correctly.
+// buttplugInit() no longer exists in buttplug v5 — the library is pure JS, no WASM init needed.
 // import * as ButtplugPanel from "vue-buttplug-material-component/src";
 const Icon = require("vue-awesome/components/Icon");
 const MatomoTracker = require("matomo-tracker");
@@ -18,7 +16,6 @@ var scripts = document.getElementsByTagName( "script" );
 var lastScript = scripts[scripts.length - 1].src;
 __webpack_public_path__ = lastScript.substr(0, lastScript.lastIndexOf('/') + 1);
 */
-buttplugInit().then(() => {
 
 // Optional: Respond to tracking errors
 matomo.on("error", function(err: string) {
@@ -26,7 +23,6 @@ matomo.on("error", function(err: string) {
 });
 
 // Track a request URL:
-// Either as a simple string …
 matomo.track({
   url: "https://buttplug.world/playground",
   action_name: "Buttplug Playground",
@@ -43,5 +39,4 @@ Vue.component("icon", Icon);
 new Vue({
   el: "#app",
   render: (h) => h(App),
-});
 });

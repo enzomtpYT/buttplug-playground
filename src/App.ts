@@ -1,8 +1,9 @@
-import { ButtplugClient, ButtplugClientDevice, ButtplugDeviceMessageType } from "buttplug";
+import { ButtplugClient, ButtplugClientDevice, OutputType } from "buttplug";
 import Vue from "vue";
 import "vue-awesome/icons/bars";
 import { Component } from "vue-property-decorator";
 import VibrationComponent from "./components/VibrationComponent/VibrationComponent.vue";
+import OscillationComponent from "./components/OscillationComponent/OscillationComponent.vue";
 import PositionComponent from "./components/PositionComponent/PositionComponent.vue";
 import RotationComponent from "./components/RotationComponent/RotationComponent.vue";
 import ButtplugPanel from "./components/ButtplugPanel/ButtplugPanel.vue";
@@ -14,6 +15,7 @@ const AppConfig = require("../dist/appconfig.json");
 @Component({
   components: {
     VibrationComponent,
+    OscillationComponent,
     PositionComponent,
     RotationComponent,
     ButtplugPanel,
@@ -57,22 +59,38 @@ export default class App extends Vue {
     this.isDragging = false;
   }
 
+  // Helper: count features that have a given output type
+  private countFeaturesWithOutput(device: ButtplugClientDevice, type: string): number {
+    let count = 0;
+    for (const [, feature] of device.features) {
+      if (feature.hasOutput(type)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   private canVibrate(device: ButtplugClientDevice): boolean {
-    return device.messageAttributes(ButtplugDeviceMessageType.VibrateCmd) !== undefined;
-  }
-
-  private canRotate(device: ButtplugClientDevice): boolean {
-    return device.messageAttributes(ButtplugDeviceMessageType.RotateCmd) !== undefined;
-  }
-
-  private canLinear(device: ButtplugClientDevice): boolean {
-    return device.messageAttributes(ButtplugDeviceMessageType.LinearCmd) !== undefined;
+    return device.hasOutput(OutputType.Vibrate);
   }
 
   private numVibrators(device: ButtplugClientDevice): number {
-    if (device || !device.messageAttributes(ButtplugDeviceMessageType.VibrateCmd) || !device.messageAttributes(ButtplugDeviceMessageType.VibrateCmd).featureCount) {
-      return 0;
-    }
-    return device!.messageAttributes(ButtplugDeviceMessageType.VibrateCmd)!.featureCount!;
+    return this.countFeaturesWithOutput(device, OutputType.Vibrate);
+  }
+
+  private canOscillate(device: ButtplugClientDevice): boolean {
+    return device.hasOutput(OutputType.Oscillate);
+  }
+
+  private numOscillators(device: ButtplugClientDevice): number {
+    return this.countFeaturesWithOutput(device, OutputType.Oscillate);
+  }
+
+  private canRotate(device: ButtplugClientDevice): boolean {
+    return device.hasOutput(OutputType.Rotate);
+  }
+
+  private canLinear(device: ButtplugClientDevice): boolean {
+    return device.hasOutput(OutputType.Position) || device.hasOutput(OutputType.HwPositionWithDuration);
   }
 }
